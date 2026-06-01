@@ -5,7 +5,7 @@ load_dotenv()
 
 CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 200
-DOCUMENT_PATH = "curriculo.pdf"
+DOCUMENT_PATH = "chat-with-pdf-rag/documentos/curriculo.pdf"
 
 OPENROUTER_API_KEY  = os.getenv("OPENROUTER_API_KEY")
     
