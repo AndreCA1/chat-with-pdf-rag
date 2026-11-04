@@ -1,55 +1,96 @@
 # =============================================================================
-# vectorstore.py — Banco vetorial (Chroma) e Retriever
+# vectorstore.py — Embeddings e Retrievers
 # =============================================================================
-# Responsabilidade única: transformar os chunks em embeddings e disponibilizar
-# um Retriever — a ferramenta de busca semântica que a cadeia RAG vai usar.
+# Responsabilidade única: transformar textos em embeddings e disponibilizar os
+# Retrievers — a ferramenta de busca semântica que a cadeia RAG vai usar.
+#
+# A API guarda os vetores no PostgreSQL com pgvector. O modo de terminal
+# (main.py) usa um banco vetorial em memória e não depende do PostgreSQL.
 #
 # Diferença em relação à versão OpenAI:
 #   Os embeddings agora são gerados localmente via sentence-transformers,
 #   sem custo de API e com suporte nativo ao português.
 
-from langchain_chroma import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings
+from collections.abc import Callable
+from functools import lru_cache
+from uuid import UUID
 
-from config import EMBEDDING_MODEL
+from langchain_core.callbacks import CallbackManagerForRetrieverRun
+from langchain_core.documents import Document
+from langchain_core.retrievers import BaseRetriever
+from langchain_core.vectorstores import InMemoryVectorStore
+from langchain_huggingface import HuggingFaceEmbeddings
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from config import EMBEDDING_MODEL, RETRIEVER_TOP_K
+from models import Chunk
+
+
+@lru_cache(maxsize=1)
+def get_embeddings() -> HuggingFaceEmbeddings:
+    """
+    Carrega o modelo uma única vez na primeira execução, e fica na cache, reaproveitando-o entre os documentos e para as próximas execuções.
+    """
+    return HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
+
+
+def build_chunks(splits: list) -> list[Chunk]:
+    """Gera os embeddings dos trechos e os converte em linhas da tabela `chunks`."""
+    vectors = get_embeddings().embed_documents(
+        [split.page_content for split in splits]
+    )
+    return [
+        Chunk(
+            page=split.metadata.get("page"),
+            content=split.page_content,
+            embedding=vector,
+        )
+        for split, vector in zip(splits, vectors)
+    ]
+
+
+class DocumentRetriever(BaseRetriever):
+    """
+    Busca os trechos mais próximos da pergunta dentro de um único documento.
+
+    Recebe uma fábrica de sessões porque a cadeia RAG pode executá-lo em outra
+    thread, e abre a conexão só durante a consulta.
+    """
+
+    document_id: UUID
+    session_factory: Callable[[], Session]
+    k: int = RETRIEVER_TOP_K
+
+    def _get_relevant_documents(
+        self, query: str, *, run_manager: CallbackManagerForRetrieverRun
+    ) -> list[Document]:
+        vector = get_embeddings().embed_query(query)
+        statement = (
+            select(Chunk)
+            .where(Chunk.document_id == self.document_id)
+            .order_by(Chunk.embedding.cosine_distance(vector))
+            .limit(self.k)
+        )
+        with self.session_factory() as session:
+            chunks = session.scalars(statement).all()
+        return [
+            Document(page_content=chunk.content, metadata={"page": chunk.page})
+            for chunk in chunks
+        ]
 
 
 def build_retriever(splits: list) -> object:
     """
-    Indexa os chunks num banco Chroma em memória e devolve um Retriever.
+    Indexa os chunks em um banco vetorial em memória e devolve um Retriever.
 
-    Como funciona
-    -------------
-    1. Cada chunk é convertido em um vetor numérico (embedding) por um modelo
-       local do HuggingFace — roda na sua máquina, sem custo de API.
-    2. O Chroma armazena esses vetores em memória.
-    3. O Retriever, ao receber uma pergunta, a transforma no mesmo espaço
-       vetorial e devolve os N chunks mais próximos (mais relevantes).
-
-    Parâmetros
-    ----------
-    splits : list[Document]
-        Chunks gerados pelo módulo `loader`.
-
-    Retorna
-    -------
-    VectorStoreRetriever
-        Objeto pronto para ser plugado na cadeia RAG.
+    Usado pelo modo de terminal. Os dados são perdidos ao encerrar o programa.
     """
-
-    # Carrega o modelo de embeddings localmente.
-    # Na primeira execução, o modelo (~90 MB) é baixado automaticamente
-    # do HuggingFace Hub e cacheado para as próximas execuções.
-    embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
-
-    # Cria o banco vetorial indexando todos os chunks de uma vez
-    vectorstore = Chroma.from_documents(
+    vectorstore = InMemoryVectorStore.from_documents(
         documents=splits,
-        embedding=embeddings,
+        embedding=get_embeddings(),
     )
-
-    # Converte o banco em Retriever com comportamento de busca por similaridade
-    retriever = vectorstore.as_retriever()
+    retriever = vectorstore.as_retriever(search_kwargs={"k": RETRIEVER_TOP_K})
 
     print("[vectorstore] Banco vetorial criado e Retriever configurado.")
     return retriever
