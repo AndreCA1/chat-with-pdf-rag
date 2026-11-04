@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat with PDF</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <section id="auth-view" class="auth card" hidden>
+    <h1>Chat with PDF</h1>
+    <p id="auth-subtitle" class="muted">Entre para acessar seus documentos.</p>
+    <form id="auth-form">
+      <label for="email">E-mail</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label for="password">Senha</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <p id="auth-error" class="error" role="alert" hidden></p>
+      <button id="auth-submit" class="primary" type="submit">Entrar</button>
+    </form>
+    <button id="auth-toggle" class="link" type="button">Criar uma conta</button>
+  </section>
+
+  <div id="app-view" hidden>
+    <header class="topbar">
+      <strong>Chat with PDF</strong>
+      <span id="user-email" class="muted user-email"></span>
+      <button id="logout" class="secondary" type="button">Sair</button>
+    </header>
+
+    <main class="layout">
+      <section class="card">
+        <h2>Meus documentos</h2>
+        <form id="upload-form" class="upload">
+          <label for="file">Enviar um PDF de até 20 MB</label>
+          <div class="row">
+            <input id="file" type="file" accept="application/pdf,.pdf" required>
+            <button id="upload-submit" class="primary" type="submit">Enviar</button>
+          </div>
+          <p id="upload-error" class="error" role="alert" hidden></p>
+        </form>
+        <ul id="document-list" class="documents"></ul>
+        <p id="empty-list" class="muted" hidden>Você ainda não enviou nenhum documento.</p>
+        <p id="list-error" class="error" role="alert" hidden></p>
+      </section>
+
+      <section class="card">
+        <h2 id="question-title">Perguntas</h2>
+        <p id="question-hint" class="muted">Selecione um documento para fazer perguntas.</p>
+        <form id="question-form" hidden>
+          <label for="question">Sua pergunta</label>
+          <textarea id="question" rows="3" maxlength="2000" required></textarea>
+          <button id="question-submit" class="primary" type="submit">Perguntar</button>
+        </form>
+        <p id="question-error" class="error" role="alert" hidden></p>
+        <div id="answer" class="answer" hidden>
+          <h3>Resposta</h3>
+          <p id="answer-text"></p>
+          <h3>Trechos usados</h3>
+          <ul id="sources" class="sources"></ul>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="delete-dialog" aria-labelledby="delete-title">
+    <h2 id="delete-title">Excluir documento?</h2>
+    <p>
+      <strong id="delete-filename" class="filename"></strong> e os dados indexados
+      serão removidos. Essa ação não pode ser desfeita.
+    </p>
+    <p id="delete-error" class="error" role="alert" hidden></p>
+    <div class="dialog-actions">
+      <button id="delete-cancel" class="secondary" type="button" autofocus>Cancelar</button>
+      <button id="delete-confirm" class="danger" type="button">Excluir</button>
+    </div>
+  </dialog>
+
+  <template id="document-template">
+    <li class="document">
+      <button class="document-select" type="button">
+        <span class="filename"></span>
+        <span class="muted document-date"></span>
+      </button>
+      <button class="icon-danger" type="button">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18"/>
+          <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+          <path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/>
+          <path d="M10 11v6"/>
+          <path d="M14 11v6"/>
+        </svg>
+      </button>
+    </li>
+  </template>
+</body>
+</html>
