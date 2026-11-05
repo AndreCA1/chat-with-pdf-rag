@@ -1,5 +1,4 @@
 import pytest
-from fastapi.testclient import TestClient
 from sqlalchemy import select
 
 from app.config import (
@@ -9,7 +8,6 @@ from app.config import (
     MIN_PASSWORD_LENGTH,
 )
 from app.database import SessionLocal
-from app.main import app
 from app.models import User
 from app.security import read_access_token, verify_password
 from tests.conftest import DEFAULT_PASSWORD
@@ -156,10 +154,20 @@ def test_successful_login_before_the_limit_resets_the_count(client, user):
     assert login(client).status_code == 200
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="Bug: o PostgreSQL não aceita o caractere nulo e o login responde 500.",
-)
-def test_login_with_a_null_character_in_the_email_is_rejected():
-    client = TestClient(app, raise_server_exceptions=False)
-    assert login(client, email="ana\x00@exemplo.com").status_code == 401
+def test_null_character_in_the_email_gets_the_unknown_email_response(client, user):
+    response = login(client, email="ana\x00@exemplo.com")
+
+    assert response.status_code == 401
+    assert response.json() == login(client, email="ninguem@exemplo.com").json()
+
+
+def test_null_character_in_the_email_counts_as_an_attempt(client):
+    email = "ana\x00@exemplo.com"
+    for _ in range(MAX_LOGIN_ATTEMPTS):
+        assert login(client, email=email).status_code == 401
+
+    assert login(client, email=email).status_code == 429
+
+
+def test_null_character_in_the_password_is_rejected(client, user):
+    assert login(client, password="senha\x00incorreta").status_code == 401

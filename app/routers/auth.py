@@ -63,8 +63,11 @@ def login(form: Annotated[OAuth2PasswordRequestForm, Depends()], response: Respo
             headers={"Retry-After": str(retry_after)},
         )
 
-    with SessionLocal() as session:
-        user = session.scalar(select(User).where(User.email == email))
+    #postgreSQL nao aceita p caractere nulo em textos
+    user = None
+    if "\x00" not in email:
+        with SessionLocal() as session:
+            user = session.scalar(select(User).where(User.email == email))
 
     # A senha é sempre verificada, para que o tempo de resposta não revele se o
     # e-mail existe. Senhas acima do limite nunca foram cadastradas.
