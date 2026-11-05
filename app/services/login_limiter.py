@@ -1,12 +1,3 @@
-# =============================================================================
-# login_limiter.py — Limite de tentativas de login
-# =============================================================================
-# Responsabilidade única: contar as tentativas de login por e-mail no banco.
-#
-# O limite vale também para e-mails sem conta, para não revelar quais existem.
-# Cada tentativa é contada antes da verificação da senha, em uma única operação
-# atômica. Assim, requisições simultâneas não conseguem ultrapassar o limite.
-
 import hashlib
 import math
 from datetime import timedelta
@@ -14,9 +5,9 @@ from datetime import timedelta
 from sqlalchemy import case, delete, func, select
 from sqlalchemy.dialects.postgresql import insert
 
-from config import LOGIN_ATTEMPT_WINDOW_MINUTES, MAX_LOGIN_ATTEMPTS
-from database import SessionLocal
-from models import LoginAttempt
+from app.config import LOGIN_ATTEMPT_WINDOW_MINUTES, MAX_LOGIN_ATTEMPTS
+from app.database import SessionLocal
+from app.models import LoginAttempt
 
 WINDOW = timedelta(minutes=LOGIN_ATTEMPT_WINDOW_MINUTES)
 
@@ -50,12 +41,10 @@ def reserve_login_attempt(email: str) -> int | None:
         )
     )
 
-    # Registros vencidos são removidos para a tabela não crescer sem limite.
-    # SKIP LOCKED evita que logins simultâneos esperem uns pelos outros.
     expired_rows = (
         select(LoginAttempt.email_hash)
         .where(LoginAttempt.window_started_at <= now - WINDOW)
-        .with_for_update(skip_locked=True)
+        .with_for_update(skip_locked=True) # evita que logins simultâneos esperem uns pelos outros
     )
 
     with SessionLocal() as session:

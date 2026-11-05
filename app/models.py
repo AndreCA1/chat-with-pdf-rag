@@ -5,7 +5,7 @@ from pgvector.sqlalchemy import Vector
 from sqlalchemy import DateTime, ForeignKey, String, Text, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-from config import EMBEDDING_DIMENSIONS
+from app.config import EMBEDDING_DIMENSIONS
 
 
 class Base(DeclarativeBase):

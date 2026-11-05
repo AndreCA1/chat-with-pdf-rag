@@ -2,8 +2,8 @@ from logging.config import fileConfig
 
 from alembic import context
 
-from database import engine
-from models import Base
+from app.database import engine
+from app.models import Base
 
 if context.config.config_file_name is not None:
     fileConfig(context.config.config_file_name)

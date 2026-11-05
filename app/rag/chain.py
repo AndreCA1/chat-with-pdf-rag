@@ -16,7 +16,7 @@ from langchain_classic.chains.combine_documents import create_stuff_documents_ch
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
-from config import LLM_MODEL, OPENROUTER_API_KEY, OPENROUTER_BASE_URL, SYSTEM_PROMPT
+from app.config import LLM_MODEL, OPENROUTER_API_KEY, OPENROUTER_BASE_URL, SYSTEM_PROMPT
 
 
 def build_rag_chain(retriever: object) -> object:

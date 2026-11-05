@@ -1,11 +1,15 @@
 import os
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 load_dotenv()
 
+STATIC_DIR = Path(__file__).parent / "static"
+
 CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 200
-DOCUMENT_PATH = "chat-with-pdf-rag/documentos/curriculo.pdf"
+DOCUMENT_PATH = "documentos/curriculo.pdf"
 
 OPENROUTER_API_KEY  = os.getenv("OPENROUTER_API_KEY")
 

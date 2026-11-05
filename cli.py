@@ -1,7 +1,7 @@
-from config import DOCUMENT_PATH
-from loader import load_and_split
-from vectorstore import build_retriever
-from chain import build_rag_chain
+from app.config import DOCUMENT_PATH
+from app.rag.loader import load_and_split
+from app.rag.vectorstore import build_retriever
+from app.rag.chain import build_rag_chain
 
 def main():
     print(f"--- Iniciando Sistema RAG ---")
@@ -15,8 +15,8 @@ def main():
 
 
     # perguntas_base = [
-    #     "Quais são as principais habilidades desse candidato?",
-    #     "Ele tem experiência com Python?"
+    #     "Qual o tema principal desse documento?",
+    #     "Quantas páginas o documento possui?"
     # ]
 
     # for pergunta in perguntas_base:

@@ -5,7 +5,7 @@
 # Retrievers — a ferramenta de busca semântica que a cadeia RAG vai usar.
 #
 # A API guarda os vetores no PostgreSQL com pgvector. O modo de terminal
-# (main.py) usa um banco vetorial em memória e não depende do PostgreSQL.
+# (cli.py) usa um banco vetorial em memória e não depende do PostgreSQL.
 #
 # Diferença em relação à versão OpenAI:
 #   Os embeddings agora são gerados localmente via sentence-transformers,
@@ -23,8 +23,8 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from config import EMBEDDING_MODEL, RETRIEVER_TOP_K
-from models import Chunk
+from app.config import EMBEDDING_MODEL, RETRIEVER_TOP_K
+from app.models import Chunk
 
 
 @lru_cache(maxsize=1)

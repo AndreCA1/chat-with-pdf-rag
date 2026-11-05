@@ -7,7 +7,7 @@
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from config import CHUNK_OVERLAP, CHUNK_SIZE, DOCUMENT_PATH
+from app.config import CHUNK_OVERLAP, CHUNK_SIZE, DOCUMENT_PATH
 
 
 def load_and_split(

@@ -73,22 +73,22 @@ O modelo gera uma resposta baseada exclusivamente nas informações recuperadas 
 
 ```text
 chat-with-pdf-rag/
-│
+├── app/
+│   ├── main.py              # cria o FastAPI e registra as rotas
+│   ├── config.py            # variáveis e configurações
+│   ├── database.py          # engine e sessões
+│   ├── dependencies.py      # usuário autenticado
+│   ├── models.py            # tabelas do banco
+│   ├── schemas.py           # entrada e saída da API
+│   ├── security.py          # Argon2 e JWT
+│   ├── routers/             # rotas de autenticação, documentos e interface
+│   ├── services/            # validação de PDFs e limite de login
+│   ├── rag/                 # loader, embeddings, busca e cadeia RAG
+│   └── static/              # interface web
 ├── documentos/
 │   └── curriculo.pdf
 ├── migrations/
-├── static/
-│
-├── api.py
-├── main.py
-├── chain.py
-├── config.py
-├── database.py
-├── loader.py
-├── login_limiter.py
-├── models.py
-├── security.py
-├── vectorstore.py
+├── cli.py                   # modo de terminal
 ├── alembic.ini
 ├── docker-compose.yml
 ├── .env.example
@@ -162,7 +162,7 @@ alembic upgrade head
 ## Executando a API
 
 ```bash
-uvicorn api:app --reload
+uvicorn app.main:app --reload
 ```
 
 * **Interface web:** http://127.0.0.1:8000, para criar a conta, enviar, consultar e excluir documentos.
@@ -235,10 +235,10 @@ Em produção, use a API somente com HTTPS.
 
 ## Executando no terminal
 
-Este modo mantém os vetores em memória e não usa o PostgreSQL. Ajuste o caminho do PDF em `DOCUMENT_PATH`, no arquivo `config.py`, e execute:
+Este modo mantém os vetores em memória e não usa o PostgreSQL. Ajuste o caminho do PDF em `DOCUMENT_PATH`, no arquivo `app/config.py`, e execute na raiz do projeto:
 
 ```bash
-python main.py
+python cli.py
 ```
 
 ## Conceitos Demonstrados

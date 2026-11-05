@@ -8,7 +8,7 @@ import jwt
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError
 
-from config import ACCESS_TOKEN_EXPIRE_MINUTES, JWT_ALGORITHM, JWT_SECRET_KEY
+from app.config import ACCESS_TOKEN_EXPIRE_MINUTES, JWT_ALGORITHM, JWT_SECRET_KEY
 
 if not JWT_SECRET_KEY or len(JWT_SECRET_KEY) < 32:
     raise RuntimeError("Defina JWT_SECRET_KEY no .env, com pelo menos 32 caracteres.")
