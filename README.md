@@ -1,5 +1,7 @@
 # Chat with PDF RAG
 
+![Testes](https://github.com/AndreCA1/chat-with-pdf-rag/actions/workflows/tests.yml/badge.svg)
+
 Sistema de **Retrieval-Augmented Generation (RAG)** com API em **FastAPI**, autenticação **JWT** e **PostgreSQL com pgvector**, utilizando **LangChain** e **OpenRouter** para responder perguntas com base no conteúdo de documentos PDF.
 
 O projeto carrega um PDF, divide o texto em chunks, gera embeddings, armazena os vetores no PostgreSQL e utiliza um LLM para responder perguntas usando apenas as informações presentes no documento. Cada usuário acessa somente os próprios documentos.
